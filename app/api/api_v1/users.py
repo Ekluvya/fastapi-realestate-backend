@@ -1,7 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException
 from core.authentication import AuthHandler
 from models.user import UserUpdate, User, UserOut
+from uuid import UUID
 from core import security
+from fastapi.encoders import jsonable_encoder
+from fastapi.responses import JSONResponse
 
 auth_handler = AuthHandler()
 
@@ -31,3 +34,14 @@ async def me(newUserDetails: UserUpdate,current_user_id= Depends(auth_handler.de
 
     await user.save()
     return UserOut(username=user.username, email=user.email, avatar=user.avatar)
+
+@router.get("/user/get_user/{id}", response_description="for updating current user details",)
+async def get_user(id:str, current_user_id= Depends(auth_handler.decode_token),):
+    if not current_user_id:
+        raise HTTPException(status_code=404, details="User not found")
+    
+    find_id = UUID(id)
+    user = await User.get(find_id)
+
+    user_json = jsonable_encoder(UserOut(username=user.username, email=user.email, avatar=user.avatar))
+    return JSONResponse(content=user_json)

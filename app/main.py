@@ -9,7 +9,7 @@ from core.config import BaseConfig
 from beanie import init_beanie
 from models.user import User
 from models.post import Post
-
+from bson.binary import UuidRepresentation
 
 settings = BaseConfig()
 origins = ["http://localhost:5173"]
@@ -17,7 +17,7 @@ origins = ["http://localhost:5173"]
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print("Starting Up!")
-    client = AsyncIOMotorClient(settings.DB_URL)
+    client = AsyncIOMotorClient(settings.DB_URL,uuidRepresentation="standard")
 
     
     try:

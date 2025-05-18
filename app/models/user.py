@@ -1,6 +1,6 @@
 from pydantic import BaseModel, EmailStr, Field
 from uuid import UUID, uuid4
-from beanie import Document, Indexed
+from beanie import Document, Indexed, Link
 from datetime import datetime
 from typing import Optional, List, Annotated
 
@@ -14,6 +14,7 @@ class User(Document):
     email: Annotated[EmailStr, Indexed()] = Field(...)
     avatar: Optional[str] = None  # You can keep it optional
     created_at: datetime = Field(default_factory=datetime.utcnow)
+    saved_posts: List[Link[Post]] = Field(default_factory=list)
 
     class Settings:
         name = "users"
