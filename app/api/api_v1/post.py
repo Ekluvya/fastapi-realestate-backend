@@ -38,6 +38,23 @@ async def findPosts(request:Request, type:str, city:str, maxPrice:int, minPrice:
     json_posts = jsonable_encoder(posts)
     return JSONResponse(content=json_posts)
 
+@router.get("/post/get-saved")
+async def get_saved_posts(user_id= Depends(auth_handler.decode_token)):
+    if not user_id:
+        raise HTTPException(status_code=401,detail="User not found")
+    user = await User.get(UUID(user_id["user_id"]))
+    await user.fetch_link("saved_posts")
+    saved_posts = user.saved_posts
+
+    
+    print("Printing id of saved posts")
+    saved_post_ids = []
+    for post in saved_posts:
+        saved_post_ids.append(str(post.id))
+    saved_json_posts = jsonable_encoder(saved_post_ids)
+    return JSONResponse(content=saved_json_posts)
+
+
 @router.get("/post/{id}",response_description="get single post")
 async def getPost(request:Request, id:str, user_id = Depends(auth_handler.decode_token)):
     if not user_id:
@@ -114,11 +131,3 @@ async def unsave_post(post_id: str, user_id = Depends(auth_handler.decode_token)
     await user.save(link_rule=WriteRules.WRITE)
     return {"message": "Post Unsaved"}
 
-@router.get("/post/get-saved")
-async def get_saved_posts(user_id=auth_handler.decode_token):
-    if not user_id:
-        raise HTTPException(status_code=401,detail="User not found")
-    user = await User.get(UUID(user_id))
-    saved_posts = user.saved_posts
-    print(saved_posts)
-    return {"request successfull"}
